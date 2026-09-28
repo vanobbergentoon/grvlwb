@@ -32,22 +32,86 @@ L.tileLayer(
 }
 ).addTo(map);
 
+let selectedSegments = [];
+let totalDistance = 0;
+
 fetch('./GRVLWB.geojson')
 .then(response => response.json())
 .then(data => {
 
-    var network = L.geoJSON(data,{
+    var network = L.geoJSON(data, {
+
         style:{
             color:'blue',
             weight:4
+        },
+
+        onEachFeature:function(feature, layer){
+
+            layer.on('click', function(){
+
+                const id = feature.properties.OBJECTID;
+                const distance = Number(feature.properties.Field || 0);
+
+                const idx =
+                    selectedSegments.findIndex(
+                        seg => seg.id === id
+                    );
+
+                if(idx === -1){
+
+                    selectedSegments.push({
+                        id:id,
+                        feature:feature
+                    });
+
+                    layer.setStyle({
+                        color:'lime'
+                    });
+
+                    totalDistance += distance;
+
+                } else {
+
+                    selectedSegments.splice(idx,1);
+
+                    layer.setStyle({
+                        color:'blue'
+                    });
+
+                    totalDistance -= distance;
+
+                }
+
+                updateSidebar();
+
+            });
+
         }
+
     }).addTo(map);
 
     map.fitBounds(network.getBounds());
 
 });
 
-</script>
+function updateSidebar(){
 
-</body>
-</html>
+    let html = '';
+
+    selectedSegments.forEach(seg => {
+
+        html += '<li>' +
+            seg.feature.properties.Name +
+            ' (' +
+            Number(seg.feature.properties.Field).toFixed(1) +
+            ' km)</li>';
+
+    });
+
+    document.getElementById('segments').innerHTML =
+        html;
+
+    document.getElementById('distance').innerHTML =
+        totalDistance.toFixed(1) + ' km';
+}
