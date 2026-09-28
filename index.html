@@ -32,6 +32,21 @@ L.tileLayer(
 }
 ).addTo(map);
 
+fetch('./GRVLWB.geojson')
+.then(response => response.json())
+.then(data => {
+
+    var network = L.geoJSON(data,{
+        style:{
+            color:'blue',
+            weight:4
+        }
+    }).addTo(map);
+
+    map.fitBounds(network.getBounds());
+
+});
+
 </script>
 
 </body>
