@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
+<meta charset="utf-8">
+<title>Testkaart</title>
 
-    <title>Test</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
-    <style>
-        #map {
-            height: 100vh;
-        }
-    </style>
+<style>
+html, body, #map {
+    height: 100%;
+    margin: 0;
+}
+</style>
 
 </head>
 
@@ -22,14 +21,14 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<cript>
+<script>
 
 var map = L.map('map').setView([51.22, 4.40], 10);
 
 L.tileLayer(
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
-maxZoom:19
+    maxZoom: 19
 }
 ).addTo(map);
 
