@@ -2,61 +2,84 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Testkaart</title>
+<title>GRVLWB</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-html, body, #map {
-    height: 100%;
-    margin: 0;
+body{
+    margin:0;
+    display:flex;
+    height:100vh;
+}
+
+#map{
+    flex:1;
+}
+
+#sidebar{
+    width:300px;
+    padding:10px;
+    background:#f4f4f4;
+    overflow:auto;
 }
 </style>
-
 </head>
 
 <body>
 
 <div id="map"></div>
 
+<div id="sidebar">
+<h2>GRVLWB</h2>
+
+<p>
+Totale afstand:
+<span id="distance">0.0 km</span>
+</p>
+
+<ul id="segments"></ul>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-var map = L.map('map').setView([51.22, 4.40], 10);
+let selectedSegments = [];
+let totalDistance = 0;
+
+var map = L.map('map').setView([51.22,4.40],10);
 
 L.tileLayer(
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
-    maxZoom: 19
+maxZoom:19
 }
 ).addTo(map);
-
-let selectedSegments = [];
-let totalDistance = 0;
 
 fetch('./GRVLWB.geojson')
 .then(response => response.json())
 .then(data => {
 
-    var network = L.geoJSON(data, {
+    const network = L.geoJSON(data,{
 
         style:{
             color:'blue',
             weight:4
         },
 
-        onEachFeature:function(feature, layer){
+        onEachFeature:function(feature,layer){
 
-            layer.on('click', function(){
+            layer.on('click',function(){
 
                 const id = feature.properties.OBJECTID;
-                const distance = Number(feature.properties.Field || 0);
+                const distance =
+                Number(feature.properties.Field || 0);
 
                 const idx =
-                    selectedSegments.findIndex(
-                        seg => seg.id === id
-                    );
+                selectedSegments.findIndex(
+                    s => s.id === id
+                );
 
                 if(idx === -1){
 
@@ -80,7 +103,6 @@ fetch('./GRVLWB.geojson')
                     });
 
                     totalDistance -= distance;
-
                 }
 
                 updateSidebar();
@@ -102,16 +124,20 @@ function updateSidebar(){
     selectedSegments.forEach(seg => {
 
         html += '<li>' +
-            seg.feature.properties.Name +
-            ' (' +
-            Number(seg.feature.properties.Field).toFixed(1) +
-            ' km)</li>';
+        seg.feature.properties.Name +
+        ' (' +
+        Number(seg.feature.properties.Field).toFixed(1) +
+        ' km)</li>';
 
     });
 
-    document.getElementById('segments').innerHTML =
-        html;
+    document.getElementById('segments').innerHTML = html;
 
     document.getElementById('distance').innerHTML =
-        totalDistance.toFixed(1) + ' km';
+    totalDistance.toFixed(1) + ' km';
 }
+
+</script>
+
+</body>
+</html>
