@@ -1,219 +1,220 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
+
 <head>
-<meta charset="utf-8">
-<title>GRVLWB Routeplanner</title>
+    <meta charset="UTF-8">
+    <title>GRVLWB Routeplanner</title>
 
-https://unpkg.com/leaflet/dist/leaflet.css
+    <link rel="stylesheet"
+        href="httpset.css
 
-<style>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
 
-body{
-    margin:0;
-    display:flex;
-    height:100vh;
-    font-family:Arial,sans-serif;
-}
+        #map {
+            flex: 1;
+        }
 
-#map{
-    flex:1;
-}
+        #sidebar {
+            width: 320px;
+            background: #f4f4f4;
+            border-left: 1px solid #ccc;
+            padding: 15px;
+            overflow-y: auto;
+        }
 
-#sidebar{
-    width:300px;
-    padding:15px;
-    overflow:auto;
-    background:#f4f4f4;
-    border-left:1px solid #ddd;
-}
+        h2 {
+            margin-top: 0;
+        }
 
-button{
-    width:100%;
-    padding:10px;
-    margin-top:10px;
-    cursor:pointer;
-}
+        ul {
+            padding-left: 20px;
+        }
 
-.selected{
-    color:green;
-}
-
-</style>
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
 
-<div id="map"></div>
+    <div id="map"></div>
 
-<div id="sidebar">
+    <div id="sidebar">
 
-<h2>GRVLWB</h2>
+        <h2>GRVLWB</h2>
 
-<p>
-Totale afstand:
-<strong id="distance">0.00 km</strong>
-</p>
+        <p>
+            Totale afstand:
+            <strong id="distance">0.00 km</strong>
+        </p>
 
-<h3>Geselecteerde segmenten</h3>
+        <h3>Segmenten</h3>
 
-<ul id="segments"></ul>
+        <ul id="segments"></ul>
 
-<button onclick="downloadGPX()">
-Download GPX
-</button>
+        <button onclick="downloadGPX()">
+            Download GPX
+        </button>
 
-</div>
+    </div>
 
-<script src="https://unpkgdist/leaflet.jsscript>
+    <script src="https://unet@1.9.4/dist/leaflet.jsscript>
 
-<script>
+    <script>
 
-let selectedSegments = [];
-let totalDistance = 0;
+        let selectedSegments = [];
+        let totalDistance = 0;
 
-const map = L.map('map').setView([51.22,4.40],10);
+        const map = L.map('map').setView([51.22, 4.40], 10);
 
-L.tileLayer(
-'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-maxZoom:19
-}
-).addTo(map);
+        L.tileLayer(
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            {
+                maxZoom: 19
+            }
+        ).addTo(map);
 
-fetch('GRVLWB.geojson')
-.then(response => response.json())
-.then(data => {
+        fetch('GRVLWB.geojson')
+            .then(response => response.json())
+            .then(data => {
 
-    const geoLayer = L.geoJSON(data,{
+                const geoLayer = L.geoJSON(data, {
 
-        style:{
-            color:'blue',
-            weight:4
-        },
+                    style: {
+                        color: 'blue',
+                        weight: 4
+                    },
 
-        onEachFeature:function(feature,layer){
+                    onEachFeature: function (feature, layer) {
 
-            layer.on('click',function(){
+                        layer.on('click', function () {
 
-                const id = feature.properties.OBJECTID;
-                const len = feature.properties.Field || 0;
+                            const id = feature.properties.OBJECTID;
+                            const len = Number(feature.properties.Field || 0);
 
-                const index =
-                selectedSegments.findIndex(
-                    s => s.id === id
-                );
+                            const index =
+                                selectedSegments.findIndex(
+                                    s => s.id === id
+                                );
 
-                if(index === -1){
+                            if (index === -1) {
 
-                    selectedSegments.push({
-                        id:id,
-                        feature:feature
-                    });
+                                selectedSegments.push({
+                                    id: id,
+                                    feature: feature
+                                });
 
-                    layer.setStyle({
-                        color:'lime'
-                    });
+                                layer.setStyle({
+                                    color: 'lime'
+                                });
 
-                    totalDistance += len;
+                                totalDistance += len;
 
-                } else {
+                            } else {
 
-                    selectedSegments.splice(index,1);
+                                selectedSegments.splice(index, 1);
 
-                    layer.setStyle({
-                        color:'blue'
-                    });
+                                layer.setStyle({
+                                    color: 'blue'
+                                });
 
-                    totalDistance -= len;
-                }
+                                totalDistance -= len;
+                            }
 
-                updatePanel();
+                            updatePanel();
+
+                        });
+
+                    }
+
+                }).addTo(map);
+
+                map.fitBounds(geoLayer.getBounds());
+
+            });
+
+        function updatePanel() {
+
+            document.getElementById('distance').innerHTML =
+                totalDistance.toFixed(2) + " km";
+
+            const list =
+                document.getElementById('segments');
+
+            list.innerHTML = '';
+
+            selectedSegments.forEach(seg => {
+
+                const li = document.createElement('li');
+
+                li.innerHTML =
+                    seg.feature.properties.Name +
+                    ' (' +
+                    Number(seg.feature.properties.Field).toFixed(1) +
+                    ' km)';
+
+                list.appendChild(li);
 
             });
 
         }
 
-    }).addTo(map);
+        function downloadGPX() {
 
-    map.fitBounds(geoLayer.getBounds());
-
-});
-
-function updatePanel(){
-
-    document.getElementById('distance')
-        .innerHTML = totalDistance.toFixed(2) + " km";
-
-    const list =
-    document.getElementById('segments');
-
-    list.innerHTML = '';
-
-    selectedSegments.forEach(seg => {
-
-        const li =
-        document.createElement('li');
-
-        li.innerHTML =
-        seg.feature.properties.Name +
-        ' (' +
-        seg.feature.properties.Field.toFixed(1) +
-        ' km)';
-
-        list.appendChild(li);
-
-    });
-
-}
-
-function downloadGPX(){
-
-    let gpx =
-`<?xml version="1.0" encoding="UTF-8"?>
-
+            let gpx =
+                `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="GRVLWB">
 <trk>
 <name>GRVLWB Route</name>
 <trkseg>
 `;
 
-    selectedSegments.forEach(seg => {
+            selectedSegments.forEach(seg => {
 
-        seg.feature.geometry.coordinates.forEach(c => {
+                seg.feature.geometry.coordinates.forEach(c => {
 
-            gpx +=
-`<trkpt lat="${c[1]}" lon="${c[0]}"></trkpt>
-`;
+                    gpx += `<trkpt lat="${c[1]}" lon="${c[0]}"></trkpt>\n`;
 
-        });
+                });
 
-    });
+            });
 
-    gpx += `
+            gpx += `
 </trkseg>
 </trk>
 </gpx>`;
 
-    const blob =
-    new Blob(
-        [gpx],
-        {type:'application/gpx+xml'}
-    );
+            const blob =
+                new Blob(
+                    [gpx],
+                    { type: 'application/gpx+xml' }
+                );
 
-    const a =
-    document.createElement('a');
+            const a =
+                document.createElement('a');
 
-    a.href =
-    URL.createObjectURL(blob);
+            a.href =
+                URL.createObjectURL(blob);
 
-    a.download =
-    'GRVLWB_route.gpx';
+            a.download =
+                'GRVLWB_route.gpx';
 
-    a.click();
+            a.click();
 
-}
+        }
 
-</script>
+    </script>
 
 </body>
+
 </html>
