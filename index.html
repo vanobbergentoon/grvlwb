@@ -1,28 +1,18 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>GRVLWB Routeplanner</title>
+    <meta charset="utf-8">
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
-    display:flex;
-    height:100vh;
-    font-family:Arial,sans-serif;
-}
+    <title>Test</title>
 
-#map{
-    flex:1;
-}
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-#sidebar{
-    width:320px;
-    background:#f4f4f4;
-    border-left:1px solid #ccc;
-    padding:15px;
-    overflow-y:auto;
-}
-</style>
+    <style>
+        #map {
+            height: 100vh;
+        }
+    </style>
 
 </head>
 
@@ -30,33 +20,11 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
 
 <div id="map"></div>
 
-<div id="sidebar">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<h2>GRVLWB</h2>
+<cript>
 
-<p>
-Totale afstand:
-<strong id="distance">0.00 km</strong>
-</p>
-
-<h3>Geselecteerde segmenten</h3>
-
-<ul id="segments"></ul>
-
-<button onclick="downloadGPX()">
-Download GPX
-</button>
-
-</div>
-
-<script src="https://unpkg1.9.4/dist/leaflet.jsscript>
-
-<script>
-
-let selectedSegments = [];
-let totalDistance = 0;
-
-const map = L.map('map').setView([51.22,4.40],10);
+var map = L.map('map').setView([51.22, 4.40], 10);
 
 L.tileLayer(
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -64,136 +32,6 @@ L.tileLayer(
 maxZoom:19
 }
 ).addTo(map);
-
-fetch('./GRVLWB.geojson')
-.then(response => response.json())
-.then(data => {
-
-const geoLayer = L.geoJSON(data,{
-
-style:{
-color:'blue',
-weight:4
-},
-
-onEachFeature:function(feature,layer){
-
-layer.on('click',function(){
-
-const id = feature.properties.OBJECTID;
-const len = Number(feature.properties.Field || 0);
-
-const index =
-selectedSegments.findIndex(
-s => s.id === id
-);
-
-if(index === -1){
-
-selectedSegments.push({
-id:id,
-feature:feature
-});
-
-layer.setStyle({
-color:'lime'
-});
-
-totalDistance += len;
-
-}
-else{
-
-selectedSegments.splice(index,1);
-
-layer.setStyle({
-color:'blue'
-});
-
-totalDistance -= len;
-}
-
-updatePanel();
-
-});
-
-}
-
-}).addTo(map);
-
-map.fitBounds(geoLayer.getBounds());
-
-});
-
-function updatePanel(){
-
-document.getElementById('distance').innerHTML =
-totalDistance.toFixed(2) + ' km';
-
-const list =
-document.getElementById('segments');
-
-list.innerHTML = '';
-
-selectedSegments.forEach(seg => {
-
-const li =
-document.createElement('li');
-
-li.textContent =
-seg.feature.properties.Name +
-' (' +
-Number(seg.feature.properties.Field).toFixed(1) +
-' km)';
-
-list.appendChild(li);
-
-});
-
-}
-
-function downloadGPX(){
-
-let gpx =
-`<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="GRVLWB">
-<trk>
-<name>GRVLWB Route</name>
-<trkseg>
-`;
-
-selectedSegments.forEach(seg => {
-
-seg.feature.geometry.coordinates.forEach(c => {
-
-gpx += `<trkpt lat="${c[1]}" lon="${c[0]}"></trkpt>\n`;
-
-});
-
-});
-
-gpx += `
-</trkseg>
-</trk>
-</gpx>`;
-
-const blob =
-new Blob([gpx],{
-type:'application/gpx+xml'
-});
-
-const a =
-document.createElement('a');
-
-a.href =
-URL.createObjectURL(blob);
-
-a.download =
-'GRVLWB_route.gpx';
-
-a.click();
-
-}
 
 </script>
 
